@@ -103,7 +103,7 @@ export function createPatchFunction (backend) {
       nodeOps.removeChild(parent, el)
     }
   }
-
+  
   function isUnknownElement (vnode, inVPre) {
     return (
       !inVPre &&
@@ -122,6 +122,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
+  // 通过虚拟节点创建真实的 DOM 并插入到它的父节点中
   function createElm (
     vnode,
     insertedVnodeQueue,
@@ -148,6 +149,7 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     const children = vnode.children
     const tag = vnode.tag
+    // 判断 vnode 是否包含 tag
     if (isDef(tag)) {
       if (process.env.NODE_ENV !== 'production') {
         if (data && data.pre) {
@@ -163,6 +165,7 @@ export function createPatchFunction (backend) {
         }
       }
 
+      // 调用平台 DOM 的操作去创建一个占位符元素
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode)
@@ -192,6 +195,8 @@ export function createPatchFunction (backend) {
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
+        // 调用 insert 方法把 DOM 插入到父节点中
+        // 因为是递归调用，子元素会优先调用 insert，所以整个 vnode 树节点的插入顺序是先子后父
         insert(parentElm, vnode.elm, refElm)
       }
 
@@ -199,10 +204,14 @@ export function createPatchFunction (backend) {
         creatingElmInVPre--
       }
     } else if (isTrue(vnode.isComment)) {
+      // 创建注释节点
       vnode.elm = nodeOps.createComment(vnode.text)
+      // 调用 insert 方法把 DOM 插入到父节点中
       insert(parentElm, vnode.elm, refElm)
     } else {
+      // 创建文本节点
       vnode.elm = nodeOps.createTextNode(vnode.text)
+      // 调用 insert 方法把 DOM 插入到父节点中
       insert(parentElm, vnode.elm, refElm)
     }
   }
@@ -287,6 +296,7 @@ export function createPatchFunction (backend) {
         checkDuplicateKeys(children)
       }
       for (let i = 0; i < children.length; ++i) {
+        // 把 vnode.elm 作为父容器的 DOM 节点占位符传入
         createElm(children[i], insertedVnodeQueue, vnode.elm, null, true, children, i)
       }
     } else if (isPrimitive(vnode.text)) {
@@ -301,6 +311,7 @@ export function createPatchFunction (backend) {
     return isDef(vnode.tag)
   }
 
+  // 执行所有的 create 的钩子并把 vnode push 到 insertedVnodeQueue 中
   function invokeCreateHooks (vnode, insertedVnodeQueue) {
     for (let i = 0; i < cbs.create.length; ++i) {
       cbs.create[i](emptyNode, vnode)
@@ -681,7 +692,12 @@ export function createPatchFunction (backend) {
       return node.nodeType === (vnode.isComment ? 8 : 3)
     }
   }
-
+  /**
+   * @param {*} oldVnode 旧的 VNode 节点，它也可以不存在或者是一个 DOM 对象
+   * @param {*} vnode 执行 _render 后返回的 VNode 的节点
+   * @param {*} hydrating 是否是服务端渲染
+   * @param {&} removeOnly 特殊flag，用于<transition-group>组件
+   */
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
@@ -725,6 +741,7 @@ export function createPatchFunction (backend) {
           }
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
+          // 把 oldVnode 转换成 VNode 对象
           oldVnode = emptyNodeAt(oldVnode)
         }
 
