@@ -73,6 +73,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+    // 组件初始化时不传el，因此组件是自己接管了 $mount 的过程
     if (vm.$options.el) {
       // 挂在组件
       vm.$mount(vm.$options.el)
