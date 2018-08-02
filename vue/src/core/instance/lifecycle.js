@@ -59,7 +59,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
-    // Vue.prototype.__patch__ 入口根据渲染使用的后端
+    // 基于后端渲染Vue.prototype.__patch__被用来作为一个入口
     // 定义在 src/platforms/web/runtime/index.js
     if (!prevVnode) {
       // initial render
@@ -72,6 +72,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     }
     activeInstance = prevActiveInstance
     // update __vue__ reference
+    // 更新新的实例对象的__vue__
     if (prevEl) {
       prevEl.__vue__ = null
     }

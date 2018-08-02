@@ -149,11 +149,12 @@ export function _createElement (
   if (Array.isArray(vnode)) {
     return vnode
   } else if (isDef(vnode)) {
-    // 如果有namespace，就应用下namespace，然后返回vnode
+    /*如果有名字空间，则递归所有子节点应用该名字空间*/
     if (isDef(ns)) applyNS(vnode, ns)
     if (isDef(data)) registerDeepBindings(data)
     return vnode
   } else {
+    /*如果vnode没有成功创建则创建空节点*/
     return createEmptyVNode()
   }
 }
