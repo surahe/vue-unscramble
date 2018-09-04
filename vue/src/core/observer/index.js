@@ -34,6 +34,11 @@ export function toggleObserving (value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
+
+ /**
+  * 添加到每个观察对象的Observer类
+  * 添加后，观察者将目标对象的属性键转换为收集依赖关系和调度更新的getter / setter
+  */
 export class Observer {
   value: any;
   dep: Dep;
@@ -41,9 +46,12 @@ export class Observer {
 
   constructor (value: any) {
     this.value = value
+    // 实例化 Dep 对象
     this.dep = new Dep()
     this.vmCount = 0
+    // 执行 def 函数把自身实例添加到数据对象 value 的 __ob__ 属性上
     def(value, '__ob__', this)
+    // 若 value 是数组会调用 observeArray 方法
     if (Array.isArray(value)) {
       const augment = hasProto
         ? protoAugment
@@ -106,11 +114,19 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
  */
+
+/**
+ * 尝试为值创建观察者实例
+ * 如果成功观察则返回新观察者
+ * 如果值已经有，则返回现有观察者
+ */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
+  // value 非对象 或者 是Vnode
   if (!isObject(value) || value instanceof VNode) {
     return
   }
   let ob: Observer | void
+  // 若 value  有 __ob__ 属性 且 __ob__ 是 observer 实例，直接返回
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -120,6 +136,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
+    // 创建实例
     ob = new Observer(value)
   }
   if (asRootData && ob) {
@@ -138,8 +155,10 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  // 初始化 Dep 对象的实例
   const dep = new Dep()
 
+  // 拿到 obj 的属性描述符
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
@@ -152,7 +171,9 @@ export function defineReactive (
     val = obj[key]
   }
 
+  // 对子对象递归调用 observe 方法
   let childOb = !shallow && observe(val)
+  // 给 obj 的属性 key 添加 getter 和 setter
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,

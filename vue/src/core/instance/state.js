@@ -35,6 +35,7 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+// 通过 Object.defineProperty 把 target[sourceKey][key] 的读写变成了对 target[key] 的读写
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -72,6 +73,7 @@ function initProps (vm: Component, propsOptions: Object) {
   if (!isRoot) {
     toggleObserving(false)
   }
+  // 遍历props
   for (const key in propsOptions) {
     keys.push(key)
     const value = validateProp(key, propsOptions, propsData, vm)
@@ -97,15 +99,18 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+      // 把每个 prop 对应的值变成响应式
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
+      // 通过 proxy 把 vm._props.xxx 的访问代理到 vm.xxx 上
       proxy(vm, `_props`, key)
     }
   }
+  // 设置为可观测
   toggleObserving(true)
 }
 
@@ -144,9 +149,12 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      // 把每一个值 vm._data.xxx 都代理到 vm.xxx 上
       proxy(vm, `_data`, key)
     }
   }
+  // 调用 observe 方法观测整个 data 的变化，把 data 也变成响应式
+  // 可以通过 vm._data.xxx 访问到定义 data 返回函数中对应的属性
   // observe data
   observe(data, true /* asRootData */)
 }
